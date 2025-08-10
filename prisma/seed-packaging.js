@@ -30,11 +30,11 @@ const itemPackagingMapping = [
   { itemName: 'Tiger Milk', packaging: '24ozcup' },
   
   // Chamoyadas -> 24ozcup
-  { itemName: 'Chamyada de Piña', packaging: '24ozcup' },
-  { itemName: 'Chamyada de Tamarindo', packaging: '24ozcup' },
-  { itemName: 'Chamyada Fresa', packaging: '24ozcup' },
-  { itemName: 'Chamyada Mango', packaging: '24ozcup' },
-  { itemName: 'Chamyada Sandía', packaging: '24ozcup' },
+  { itemName: 'Chamoyada de Piña', packaging: '24ozcup' },
+  { itemName: 'Chamoyada de Tamarindo', packaging: '24ozcup' },
+  { itemName: 'Chamoyada Fresa', packaging: '24ozcup' },
+  { itemName: 'Chamoyada Mango', packaging: '24ozcup' },
+  { itemName: 'Chamoyada Sandía', packaging: '24ozcup' },
   
   // Drinks -> 24ozcup
   { itemName: 'Coco Rosa', packaging: '24ozcup' },
