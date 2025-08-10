@@ -31,8 +31,7 @@ export default function POS() {
       'Takis',
       'Cheetos',
       'Conchitas',
-      'Tostitos',
-      'Sopa'
+      'Tostitos'
     ];
     
     // Sort categories to put SNACKS first
@@ -92,6 +91,13 @@ export default function POS() {
       .filter((l) => l.quantity > 0));
   }
 
+  // Function to play cash drawer sound
+  function playCashDrawerSound() {
+    const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+    audio.volume = 0.3;
+    audio.play().catch(e => console.log('Audio play failed:', e));
+  }
+
   async function completeOrder() {
     setSubmitting(true);
     setMessage('');
@@ -110,6 +116,8 @@ export default function POS() {
       setMessage(`Sale ${data.saleId} complete. Total ${centsToUSD(data.totalCents)}${paymentMethod === 'cash' ? `, Change ${centsToUSD(data.changeDueCents)}` : ''}`);
       setCart([]);
       setTender('');
+      // Play cash drawer sound
+      playCashDrawerSound();
       // refresh items to show updated stock on inventory page too if needed
       fetch('/api/items').then((r) => r.json()).then(setItems);
     } catch (e) {
@@ -126,12 +134,42 @@ export default function POS() {
           <div key={category} style={{ marginBottom: 16 }}>
             <h3 style={{ margin: '8px 0', fontSize: '1.25em' }}>{category}</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 8 }}>
-              {list.map((it) => (
-                <button key={it.id} onClick={() => addToCart(it)} style={{ padding: 12, textAlign: 'left', border: '1px solid #ddd', borderRadius: 8, background: '#fff', cursor: 'pointer', fontSize: '1.25em' }}>
-                  <div style={{ fontWeight: 600 }}>{it.name}</div>
-                  <div style={{ opacity: 0.7 }}>{centsToUSD(it.priceCents)}</div>
-                </button>
-              ))}
+              {list.map((it) => {
+                // Define background colors for different categories
+                let backgroundColor = '#fff';
+                if (category === 'SNACKS') {
+                  // Highlight specific SNACKS items in light green
+                  const highlightedSnacks = ['Elote chico', 'Elote Grande', 'Elote Entero', 'Takis', 'Cheetos', 'Conchitas', 'Tostitos'];
+                  backgroundColor = highlightedSnacks.includes(it.name) ? '#e8f5e8' : '#fff';
+                } else if (category === 'Chamoyadas') {
+                  backgroundColor = '#fffbf0'; // Light yellow
+                } else if (category === 'Drinks') {
+                  backgroundColor = '#f0f8ff'; // Light blue
+                } else if (category === 'Frappes') {
+                  backgroundColor = '#f5f5dc'; // Light brown
+                } else if (category === 'Bobas') {
+                  backgroundColor = '#ffe6f2'; // Light pink
+                }
+                
+                return (
+                  <button 
+                    key={it.id} 
+                    onClick={() => addToCart(it)} 
+                    style={{ 
+                      padding: 12, 
+                      textAlign: 'left', 
+                      border: '1px solid #ddd', 
+                      borderRadius: 8, 
+                      background: backgroundColor, 
+                      cursor: 'pointer', 
+                      fontSize: '1.25em' 
+                    }}
+                  >
+                    <div style={{ fontWeight: 600 }}>{it.name}</div>
+                    <div style={{ opacity: 0.7 }}>{centsToUSD(it.priceCents)}</div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         ))}

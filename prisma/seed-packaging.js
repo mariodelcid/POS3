@@ -4,11 +4,11 @@ const prisma = new PrismaClient();
 
 // Packaging materials inventory
 const packagingMaterials = [
-  { name: '24ozcup', stock: 500 },
-  { name: '20ozcup', stock: 300 },
+  { name: '24clear', stock: 500 },
+  { name: '20clear', stock: 300 },
   { name: 'elote grande', stock: 200 },
   { name: 'elote chico', stock: 400 },
-  { name: '16ozcupclear', stock: 300 },
+  { name: '16clear', stock: 300 },
   { name: 'charolas', stock: 150 },
   { name: 'chetos', stock: 100 },
   { name: 'conchitas', stock: 100 },
@@ -20,36 +20,36 @@ const packagingMaterials = [
 
 // Item to packaging mapping
 const itemPackagingMapping = [
-  // Bobas -> 24ozcup
-  { itemName: 'Boba Coffee', packaging: '24ozcup' },
-  { itemName: 'Boba Strawberry', packaging: '24ozcup' },
-  { itemName: 'Boba Taro', packaging: '24ozcup' },
+  // Bobas -> 24clear
+  { itemName: 'Boba Coffee', packaging: '24clear' },
+  { itemName: 'Boba Strawberry', packaging: '24clear' },
+  { itemName: 'Boba Taro', packaging: '24clear' },
 
-  { itemName: 'BobaTiger Milk', packaging: '24ozcup' },
-  { itemName: 'Coffee boba', packaging: '24ozcup' },
-  { itemName: 'Tiger Milk', packaging: '24ozcup' },
+  { itemName: 'BobaTiger Milk', packaging: '24clear' },
+  { itemName: 'Coffee boba', packaging: '24clear' },
+  { itemName: 'Tiger Milk', packaging: '24clear' },
   
-  // Chamoyadas -> 24ozcup
-  { itemName: 'Chamoyada de Piña', packaging: '24ozcup' },
-  { itemName: 'Chamoyada de Tamarindo', packaging: '24ozcup' },
-  { itemName: 'Chamoyada Fresa', packaging: '24ozcup' },
-  { itemName: 'Chamoyada Mango', packaging: '24ozcup' },
-  { itemName: 'Chamoyada Sandía', packaging: '24ozcup' },
+  // Chamoyadas -> 24clear
+  { itemName: 'Chamoyada de Piña', packaging: '24clear' },
+  { itemName: 'Chamoyada de Tamarindo', packaging: '24clear' },
+  { itemName: 'Chamoyada Fresa', packaging: '24clear' },
+  { itemName: 'Chamoyada Mango', packaging: '24clear' },
+  { itemName: 'Chamoyada Sandía', packaging: '24clear' },
   
-  // Drinks -> 24ozcup
-  { itemName: 'Coco Rosa', packaging: '24ozcup' },
-  { itemName: 'Horchata Canela', packaging: '24ozcup' },
-  { itemName: 'Horchata Fresa', packaging: '24ozcup' },
-  { itemName: 'Malteada', packaging: '24ozcup' },
-  { itemName: 'Mango Peach Dragonfruit', packaging: '24ozcup' },
-  { itemName: 'Red Bull Infuser', packaging: '24ozcup' },
-  { itemName: 'Strawberry Acai', packaging: '24ozcup' },
-  { itemName: 'Taro Hot', packaging: '24ozcup' },
+  // Drinks -> 24clear
+  { itemName: 'Coco Rosa', packaging: '24clear' },
+  { itemName: 'Horchata Canela', packaging: '24clear' },
+  { itemName: 'Horchata Fresa', packaging: '24clear' },
+  { itemName: 'Malteada', packaging: '24clear' },
+  { itemName: 'Mango Peach Dragonfruit', packaging: '24clear' },
+  { itemName: 'Red Bull Infuser', packaging: '24clear' },
+  { itemName: 'Strawberry Acai', packaging: '24clear' },
+  { itemName: 'Taro Hot', packaging: '24clear' },
   
-  // Frappes -> 20ozcup
-  { itemName: 'Cookies and Cream', packaging: '20ozcup' },
-  { itemName: 'Frappuchino De Caffe', packaging: '20ozcup' },
-  { itemName: 'Frappuchino De Taro', packaging: '20ozcup' },
+  // Frappes -> 20clear
+  { itemName: 'Cookies and Cream', packaging: '20clear' },
+  { itemName: 'Frappuchino De Caffe', packaging: '20clear' },
+  { itemName: 'Frappuchino De Taro', packaging: '20clear' },
   
   // Snacks with their own packaging
   { itemName: 'Cheetos', packaging: 'chetos' },
@@ -68,7 +68,7 @@ const itemPackagingMapping = [
   { itemName: 'Elote Grande', packaging: 'elote grande' },
   
   // Fresa con crema
-  { itemName: 'Fresa Con Crema 16 oz', packaging: '16ozcupclear' },
+  { itemName: 'Fresa Con Crema 16 oz', packaging: '16clear' },
   
   // Ice cream
   { itemName: 'Vaso Nieve 1 Scoop', packaging: 'nievecup' },
