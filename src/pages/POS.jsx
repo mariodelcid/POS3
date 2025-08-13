@@ -35,10 +35,22 @@ export default function POS() {
       'Tostitos'
     ];
     
-    // Sort categories to put SNACKS first
+    // Define the exact category order we want
+    const categoryOrder = ['SNACKS', 'Chamoyadas', 'Drinks', 'Frappes', 'Bobas'];
+    
+    // Sort categories in the specific order we want
     const sortedCategories = Array.from(map.entries()).sort(([a], [b]) => {
-      if (a === 'SNACKS') return -1;
-      if (b === 'SNACKS') return 1;
+      const aIndex = categoryOrder.indexOf(a);
+      const bIndex = categoryOrder.indexOf(b);
+      
+      // If both categories are in our order list, sort by their position
+      if (aIndex !== -1 && bIndex !== -1) {
+        return aIndex - bIndex;
+      }
+      // If only one is in the order list, prioritize it
+      if (aIndex !== -1) return -1;
+      if (bIndex !== -1) return 1;
+      // If neither is in the order list, sort alphabetically
       return a.localeCompare(b);
     });
     
