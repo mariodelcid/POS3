@@ -11,6 +11,7 @@ export default function POS() {
   const [tender, setTender] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('SNACKS');
 
   useEffect(() => {
     fetch('/api/items').then((r) => r.json()).then(setItems);
@@ -70,10 +71,13 @@ export default function POS() {
   }, [items]);
 
   const subtotalCents = cart.reduce((s, l) => s + l.priceCents * l.quantity, 0);
-  const taxCents = 0; // adjust if needed
+  const taxCents = Math.round(subtotalCents * 0.0825); // 8.25% tax
   const totalCents = subtotalCents + taxCents;
   const tenderCents = Math.round(parseFloat(tender || '0') * 100);
   const changeCents = paymentMethod === 'cash' ? Math.max(0, tenderCents - totalCents) : 0;
+
+  // Get current category items
+  const currentCategoryItems = grouped.find(g => g.category === selectedCategory)?.list || [];
 
   function addToCart(item) {
     setCart((prev) => {
@@ -89,6 +93,10 @@ export default function POS() {
     setCart((prev) => prev
       .map((l) => (l.itemId === itemId ? { ...l, quantity: Math.max(0, l.quantity + delta) } : l))
       .filter((l) => l.quantity > 0));
+  }
+
+  function removeFromCart(itemId) {
+    setCart((prev) => prev.filter((l) => l.itemId !== itemId));
   }
 
   // Function to play cash drawer sound
@@ -127,97 +135,469 @@ export default function POS() {
     }
   }
 
+  function clearCart() {
+    setCart([]);
+    setTender('');
+    setMessage('');
+  }
+
+  // Quick tender buttons for common amounts
+  const quickTenderAmounts = [5, 10, 20, 50, 100];
+
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', height: 'calc(100vh - 60px)' }}>
-      <div style={{ padding: 16, overflow: 'auto', borderRight: '1px solid #eee' }}>
-        {grouped.map(({ category, list }) => (
-          <div key={category} style={{ marginBottom: 16 }}>
-            <h3 style={{ margin: '8px 0', fontSize: '1.25em' }}>{category}</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 8 }}>
-              {list.map((it) => {
-                // Define background colors for different categories
-                let backgroundColor = '#fff';
-                if (category === 'SNACKS') {
-                  // Highlight specific SNACKS items in light green
-                  const highlightedSnacks = ['Elote chico', 'Elote Grande', 'Elote Entero', 'Takis', 'Cheetos', 'Conchitas', 'Tostitos'];
-                  backgroundColor = highlightedSnacks.includes(it.name) ? '#e8f5e8' : '#fff';
-                } else if (category === 'Chamoyadas') {
-                  backgroundColor = '#fffbf0'; // Light yellow
-                } else if (category === 'Drinks') {
-                  backgroundColor = '#f0f8ff'; // Light blue
-                } else if (category === 'Frappes') {
-                  backgroundColor = '#f5f5dc'; // Light brown
-                } else if (category === 'Bobas') {
-                  backgroundColor = '#ffe6f2'; // Light pink
-                }
-                
-                return (
-                  <button 
-                    key={it.id} 
-                    onClick={() => addToCart(it)} 
-                    style={{ 
-                      padding: 12, 
-                      textAlign: 'left', 
-                      border: '1px solid #ddd', 
-                      borderRadius: 8, 
-                      background: backgroundColor, 
-                      cursor: 'pointer', 
-                      fontSize: '1.25em' 
-                    }}
-                  >
-                    <div style={{ fontWeight: 600 }}>{it.name}</div>
-                    <div style={{ opacity: 0.7 }}>{centsToUSD(it.priceCents)}</div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
-      <div style={{ padding: 16 }}>
-        <h3 style={{ marginTop: 0, fontSize: '1.25em' }}>Cart</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: '1.25em' }}>
-          {cart.length === 0 && <div style={{ opacity: 0.7 }}>No items</div>}
-          {cart.map((l) => (
-            <div key={l.itemId} style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto', gap: 8, alignItems: 'center' }}>
-              <div>{l.name}</div>
-              <div>{centsToUSD(l.priceCents)}</div>
-              <div>
-                <button onClick={() => updateQty(l.itemId, -1)} style={{ fontSize: '1.25em' }}>-</button>
-                <span style={{ margin: '0 8px' }}>{l.quantity}</span>
-                <button onClick={() => updateQty(l.itemId, 1)} style={{ fontSize: '1.25em' }}>+</button>
-              </div>
-              <div style={{ textAlign: 'right' }}>{centsToUSD(l.priceCents * l.quantity)}</div>
-            </div>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', height: 'calc(100vh - 60px)', gap: 0 }}>
+      {/* Left Side - Categories and Items */}
+      <div style={{ display: 'flex', flexDirection: 'column', borderRight: '2px solid #e5e7eb' }}>
+        {/* Categories Navigation */}
+        <div style={{ 
+          display: 'flex', 
+          overflowX: 'auto', 
+          borderBottom: '2px solid #e5e7eb',
+          backgroundColor: '#f9fafb',
+          padding: '8px'
+        }}>
+          {grouped.map(({ category }) => (
+            <button
+              key={category}
+              onClick={() => setSelectedCategory(category)}
+              style={{
+                padding: '12px 20px',
+                margin: '0 4px',
+                border: 'none',
+                borderRadius: '8px',
+                backgroundColor: selectedCategory === category ? '#2563eb' : '#e5e7eb',
+                color: selectedCategory === category ? 'white' : '#374151',
+                fontWeight: selectedCategory === category ? '600' : '500',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                fontSize: '14px',
+                transition: 'all 0.2s'
+              }}
+            >
+              {category}
+            </button>
           ))}
         </div>
-        <hr />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, fontSize: '1.25em' }}>
-          <div>Subtotal</div>
-          <div>{centsToUSD(subtotalCents)}</div>
-          <div>Tax</div>
-          <div>{centsToUSD(taxCents)}</div>
-          <div style={{ fontWeight: 700 }}>Total</div>
-          <div style={{ fontWeight: 700 }}>{centsToUSD(totalCents)}</div>
+
+        {/* Items Grid */}
+        <div style={{ 
+          padding: '20px', 
+          overflow: 'auto', 
+          flex: 1,
+          backgroundColor: '#ffffff'
+        }}>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
+            gap: '12px' 
+          }}>
+            {currentCategoryItems.map((it) => {
+              // Define background colors for different categories
+              let backgroundColor = '#ffffff';
+              let borderColor = '#e5e7eb';
+              
+              if (it.category === 'SNACKS') {
+                const highlightedSnacks = ['Elote chico', 'Elote Grande', 'Elote Entero', 'Takis', 'Cheetos', 'Conchitas', 'Tostitos'];
+                backgroundColor = highlightedSnacks.includes(it.name) ? '#f0fdf4' : '#ffffff';
+                borderColor = highlightedSnacks.includes(it.name) ? '#22c55e' : '#e5e7eb';
+              } else if (it.category === 'Chamoyadas') {
+                backgroundColor = '#fefce8';
+                borderColor = '#fbbf24';
+              } else if (it.category === 'Drinks') {
+                backgroundColor = '#eff6ff';
+                borderColor = '#3b82f6';
+              } else if (it.category === 'Frappes') {
+                backgroundColor = '#fef3c7';
+                borderColor = '#f59e0b';
+              } else if (it.category === 'Bobas') {
+                backgroundColor = '#fdf2f8';
+                borderColor = '#ec4899';
+              }
+              
+              return (
+                <button 
+                  key={it.id} 
+                  onClick={() => addToCart(it)} 
+                  style={{ 
+                    padding: '16px', 
+                    textAlign: 'left', 
+                    border: `2px solid ${borderColor}`, 
+                    borderRadius: '12px', 
+                    background: backgroundColor, 
+                    cursor: 'pointer', 
+                    fontSize: '16px',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    minHeight: '100px',
+                    justifyContent: 'center'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                >
+                  <div style={{ fontWeight: '600', fontSize: '18px', lineHeight: '1.2' }}>{it.name}</div>
+                  <div style={{ 
+                    fontSize: '20px', 
+                    fontWeight: '700', 
+                    color: '#059669',
+                    marginTop: 'auto'
+                  }}>
+                    {centsToUSD(it.priceCents)}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
-        <div style={{ marginTop: 12, fontSize: '1.25em' }}>
-          <label>
-            <input type="radio" name="pm" value="cash" checked={paymentMethod === 'cash'} onChange={() => setPaymentMethod('cash')} /> Cash
-          </label>
-          <label style={{ marginLeft: 16 }}>
-            <input type="radio" name="pm" value="credit" checked={paymentMethod === 'credit'} onChange={() => setPaymentMethod('credit')} /> Credit
-          </label>
+      </div>
+
+      {/* Right Side - Cart and Checkout */}
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        backgroundColor: '#f8fafc',
+        padding: '20px'
+      }}>
+        {/* Header */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          marginBottom: '20px',
+          paddingBottom: '16px',
+          borderBottom: '2px solid #e5e7eb'
+        }}>
+          <h2 style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#1f2937' }}>
+            Current Order
+          </h2>
+          <button
+            onClick={clearCart}
+            style={{
+              padding: '8px 16px',
+              border: '1px solid #dc2626',
+              borderRadius: '6px',
+              backgroundColor: '#fef2f2',
+              color: '#dc2626',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
+          >
+            Clear Cart
+          </button>
         </div>
-        {paymentMethod === 'cash' && (
-          <div style={{ marginTop: 8, fontSize: '1.25em' }}>
-            <label> Tendered: <input type="number" step="0.01" value={tender} onChange={(e) => setTender(e.target.value)} placeholder="0.00" style={{ fontSize: '1.25em' }} /> </label>
-            <div>Change: <strong>{centsToUSD(changeCents)}</strong></div>
+
+        {/* Cart Items */}
+        <div style={{ 
+          flex: 1, 
+          overflow: 'auto',
+          backgroundColor: '#ffffff',
+          borderRadius: '12px',
+          padding: '16px',
+          marginBottom: '20px',
+          border: '1px solid #e5e7eb'
+        }}>
+          {cart.length === 0 ? (
+            <div style={{ 
+              textAlign: 'center', 
+              color: '#6b7280', 
+              fontSize: '16px',
+              padding: '40px 20px'
+            }}>
+              No items in cart
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {cart.map((l) => (
+                <div key={l.itemId} style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: '1fr auto auto auto auto', 
+                  gap: '12px', 
+                  alignItems: 'center',
+                  padding: '12px',
+                  backgroundColor: '#f9fafb',
+                  borderRadius: '8px',
+                  border: '1px solid #e5e7eb'
+                }}>
+                  <div style={{ fontWeight: '500', fontSize: '16px' }}>{l.name}</div>
+                  <div style={{ fontSize: '16px', color: '#059669', fontWeight: '600' }}>
+                    {centsToUSD(l.priceCents)}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button 
+                      onClick={() => updateQty(l.itemId, -1)} 
+                      style={{ 
+                        width: '32px', 
+                        height: '32px', 
+                        border: '1px solid #d1d5db',
+                        borderRadius: '4px',
+                        backgroundColor: '#ffffff',
+                        cursor: 'pointer',
+                        fontSize: '18px',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      -
+                    </button>
+                    <span style={{ 
+                      margin: '0 8px', 
+                      fontSize: '16px', 
+                      fontWeight: '600',
+                      minWidth: '20px',
+                      textAlign: 'center'
+                    }}>
+                      {l.quantity}
+                    </span>
+                    <button 
+                      onClick={() => updateQty(l.itemId, 1)} 
+                      style={{ 
+                        width: '32px', 
+                        height: '32px', 
+                        border: '1px solid #d1d5db',
+                        borderRadius: '4px',
+                        backgroundColor: '#ffffff',
+                        cursor: 'pointer',
+                        fontSize: '18px',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
+                  <div style={{ 
+                    textAlign: 'right', 
+                    fontSize: '16px', 
+                    fontWeight: '700',
+                    color: '#059669'
+                  }}>
+                    {centsToUSD(l.priceCents * l.quantity)}
+                  </div>
+                  <button
+                    onClick={() => removeFromCart(l.itemId)}
+                    style={{
+                      padding: '4px 8px',
+                      border: '1px solid #dc2626',
+                      borderRadius: '4px',
+                      backgroundColor: '#fef2f2',
+                      color: '#dc2626',
+                      cursor: 'pointer',
+                      fontSize: '12px'
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Totals */}
+        <div style={{ 
+          backgroundColor: '#ffffff',
+          borderRadius: '12px',
+          padding: '20px',
+          marginBottom: '20px',
+          border: '1px solid #e5e7eb'
+        }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '12px', fontSize: '16px' }}>
+            <div style={{ color: '#6b7280' }}>Subtotal</div>
+            <div style={{ fontWeight: '600' }}>{centsToUSD(subtotalCents)}</div>
+            <div style={{ color: '#6b7280' }}>Tax (8.25%)</div>
+            <div style={{ fontWeight: '600' }}>{centsToUSD(taxCents)}</div>
+            <div style={{ 
+              fontWeight: '700', 
+              fontSize: '20px', 
+              color: '#1f2937',
+              borderTop: '2px solid #e5e7eb',
+              paddingTop: '12px',
+              marginTop: '8px'
+            }}>
+              Total
+            </div>
+            <div style={{ 
+              fontWeight: '700', 
+              fontSize: '20px', 
+              color: '#059669',
+              borderTop: '2px solid #e5e7eb',
+              paddingTop: '12px',
+              marginTop: '8px'
+            }}>
+              {centsToUSD(totalCents)}
+            </div>
+          </div>
+        </div>
+
+        {/* Payment Method */}
+        <div style={{ 
+          backgroundColor: '#ffffff',
+          borderRadius: '12px',
+          padding: '20px',
+          marginBottom: '20px',
+          border: '1px solid #e5e7eb'
+        }}>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: '600' }}>Payment Method</h3>
+          <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
+            <label style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px',
+              padding: '12px 16px',
+              border: `2px solid ${paymentMethod === 'cash' ? '#2563eb' : '#e5e7eb'}`,
+              borderRadius: '8px',
+              backgroundColor: paymentMethod === 'cash' ? '#eff6ff' : '#ffffff',
+              cursor: 'pointer',
+              flex: 1,
+              justifyContent: 'center',
+              fontWeight: '500'
+            }}>
+              <input 
+                type="radio" 
+                name="pm" 
+                value="cash" 
+                checked={paymentMethod === 'cash'} 
+                onChange={() => setPaymentMethod('cash')}
+                style={{ margin: 0 }}
+              />
+              💵 Cash
+            </label>
+            <label style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px',
+              padding: '12px 16px',
+              border: `2px solid ${paymentMethod === 'credit' ? '#2563eb' : '#e5e7eb'}`,
+              borderRadius: '8px',
+              backgroundColor: paymentMethod === 'credit' ? '#eff6ff' : '#ffffff',
+              cursor: 'pointer',
+              flex: 1,
+              justifyContent: 'center',
+              fontWeight: '500'
+            }}>
+              <input 
+                type="radio" 
+                name="pm" 
+                value="credit" 
+                checked={paymentMethod === 'credit'} 
+                onChange={() => setPaymentMethod('credit')}
+                style={{ margin: 0 }}
+              />
+              💳 Credit
+            </label>
+          </div>
+
+          {paymentMethod === 'cash' && (
+            <div>
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+                  Amount Tendered:
+                </label>
+                <input 
+                  type="number" 
+                  step="0.01" 
+                  value={tender} 
+                  onChange={(e) => setTender(e.target.value)} 
+                  placeholder="0.00" 
+                  style={{ 
+                    width: '100%',
+                    padding: '12px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    fontSize: '18px',
+                    fontWeight: '600'
+                  }} 
+                />
+              </div>
+              
+              {/* Quick Tender Buttons */}
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                {quickTenderAmounts.map(amount => (
+                  <button
+                    key={amount}
+                    onClick={() => setTender(amount.toString())}
+                    style={{
+                      padding: '8px 12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      backgroundColor: '#ffffff',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    ${amount}
+                  </button>
+                ))}
+              </div>
+
+              {tenderCents > 0 && (
+                <div style={{ 
+                  padding: '12px',
+                  backgroundColor: changeCents >= 0 ? '#f0fdf4' : '#fef2f2',
+                  borderRadius: '8px',
+                  border: `1px solid ${changeCents >= 0 ? '#22c55e' : '#dc2626'}`,
+                  textAlign: 'center'
+                }}>
+                  <div style={{ 
+                    fontSize: '18px', 
+                    fontWeight: '700',
+                    color: changeCents >= 0 ? '#059669' : '#dc2626'
+                  }}>
+                    Change: {centsToUSD(changeCents)}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Complete Order Button */}
+        <button 
+          disabled={cart.length === 0 || submitting || (paymentMethod === 'cash' && tenderCents < totalCents)} 
+          onClick={completeOrder} 
+          style={{ 
+            width: '100%', 
+            padding: '20px', 
+            background: cart.length === 0 || submitting || (paymentMethod === 'cash' && tenderCents < totalCents) 
+              ? '#9ca3af' 
+              : '#059669', 
+            color: '#ffffff', 
+            border: 'none', 
+            borderRadius: '12px', 
+            fontSize: '20px', 
+            fontWeight: '700',
+            cursor: cart.length === 0 || submitting || (paymentMethod === 'cash' && tenderCents < totalCents) 
+              ? 'not-allowed' 
+              : 'pointer',
+            transition: 'all 0.2s'
+          }}
+        >
+          {submitting ? 'Processing...' : 'Complete Order'}
+        </button>
+
+        {/* Message */}
+        {message && (
+          <div style={{ 
+            marginTop: '16px', 
+            padding: '12px',
+            backgroundColor: message.includes('complete') ? '#f0fdf4' : '#fef2f2',
+            border: `1px solid ${message.includes('complete') ? '#22c55e' : '#dc2626'}`,
+            borderRadius: '8px',
+            color: message.includes('complete') ? '#059669' : '#dc2626',
+            fontSize: '16px',
+            fontWeight: '500',
+            textAlign: 'center'
+          }}>
+            {message}
           </div>
         )}
-        <button disabled={cart.length === 0 || submitting || (paymentMethod === 'cash' && tenderCents < totalCents)} onClick={completeOrder} style={{ marginTop: 12, width: '100%', padding: 12, background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, fontSize: '1.25em', cursor: 'pointer' }}>
-          {submitting ? 'Submitting…' : 'Complete Order'}
-        </button>
-        {message && <div style={{ marginTop: 8, fontSize: '1.25em' }}>{message}</div>}
       </div>
     </div>
   );
