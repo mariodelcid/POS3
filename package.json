@@ -10,12 +10,11 @@
     "dev:client": "vite",
     "dev": "concurrently \"npm:dev:server\" \"npm:dev:client\"",
     "build": "vite build",
-    "start": "npx prisma db push && npm run seed && npm run seed:packaging && node server/index.js",
-    "postinstall": "prisma generate",
-    "db:push": "prisma db push",
+    "start": "node start.js",
+    "postinstall": "npx prisma generate",
+    "db:push": "npx prisma db push",
     "seed": "node prisma/seed.js",
-    "seed:packaging": "node prisma/seed-packaging.js",
-    "railway-start": "npx prisma db push && npm run seed && npm run seed:packaging && node server/index.js"
+    "seed:packaging": "node prisma/seed-packaging.js"
   },
   "dependencies": {
     "@prisma/client": "^5.16.2",
