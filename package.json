@@ -9,9 +9,8 @@
     "dev:server": "nodemon server/index.js",
     "dev:client": "vite",
     "dev": "concurrently \"npm:dev:server\" \"npm:dev:client\"",
-    "build": "vite build",
+    "build": "npx prisma generate && vite build",
     "start": "node start.js",
-    "postinstall": "npx prisma generate",
     "db:push": "npx prisma db push",
     "seed": "node prisma/seed.js",
     "seed:packaging": "node prisma/seed-packaging.js"
