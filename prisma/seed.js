@@ -45,7 +45,6 @@ const items = [
   { name: 'Boba Strawberry', category: 'Bobas', priceCents: 499 },
   { name: 'Boba Taro', category: 'Bobas', priceCents: 499 },
   { name: 'BobaTiger Milk', category: 'Bobas', priceCents: 499 },
-  { name: 'Coffee boba', category: 'Bobas', priceCents: 499 },
   { name: 'Tiger Milk', category: 'Bobas', priceCents: 499 },
 ];
 

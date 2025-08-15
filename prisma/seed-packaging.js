@@ -26,7 +26,6 @@ const itemPackagingMapping = [
   { itemName: 'Boba Taro', packaging: '24clear' },
 
   { itemName: 'BobaTiger Milk', packaging: '24clear' },
-  { itemName: 'Coffee boba', packaging: '24clear' },
   { itemName: 'Tiger Milk', packaging: '24clear' },
   
   // Chamoyadas -> 24clear
