@@ -3,6 +3,10 @@ import { execSync } from 'child_process';
 console.log('🚀 Starting Chillers POS on Render...');
 
 try {
+  // Generate Prisma client first
+  console.log('🔧 Generating Prisma client...');
+  execSync('npx prisma generate', { stdio: 'inherit' });
+  
   // Initialize database
   console.log('📋 Initializing database...');
   execSync('npx prisma db push', { stdio: 'inherit' });
