@@ -1,3 +1,4 @@
+# Render.com configuration for Chillers POS
 services:
   - type: web
     name: pos
